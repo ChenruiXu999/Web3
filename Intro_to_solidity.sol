@@ -16,9 +16,15 @@ contract ZombieFactory {
     }
     //实例化一个结构体序列
     Zombie[] public zombies;
+    //定义两个映射关系
+    mapping (uint => address) public zombieToOwner;
+    mapping (address => uint) ownerZombieCount;
     //如果定义一个function为private，要在参数后面加上private，然后把函数的名称前加上下划线_；
     function _createZombie(string _name, uint _dna) private {
         uint id = zombies.push(Zombie(_name, _dna)) - 1; //给zombies这个序列中append一个结构体数据，传入参数_name和_dna
+        //msg.sender？？？
+        zombieToOwner[id] = msg.sender;
+        ownerZombieCount[msg.sender]++;
         NewZombie(id, _name, _dna);//这里出发事件event
     }
     //如果函数没有改变任何值和状态，用view去修饰函数，否则用pure ？？？
@@ -29,8 +35,14 @@ contract ZombieFactory {
     }
     //public return不需要声明
     function createRandomZombie(string _name) public {
+        require(ownerZombieCount[msg.sender] == 0);//require定义这个函数不会被反复使用
         uint randDna = _generateRandomDna(_name);
         _createZombie(_name, randDna);//行为函数
     }
 
 }
+//继承，把上面冗长的代码直接加载
+contract ZombieFeeding is ZombieFactory {
+
+}
+
